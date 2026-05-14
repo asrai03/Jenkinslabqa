@@ -32,7 +32,7 @@ pipeline {
         stage('Test') {
             steps {
                 sh 'echo "Running unit tests..."'
-                sh 'docker run --rm flask-task1 python -m pytest /app/test_app.py -v || docker run --rm flask-task1 python /app/test_app.py'
+                sh 'docker run --rm --entrypoint python flask-task1 /app/test_app.py'
             }
         }
         stage('Deploy') {
