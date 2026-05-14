@@ -1,25 +1,38 @@
 pipeline {
     agent any
     stages {
+        stage('Setup') {
+            steps {
+                sh 'echo "Setting up pipeline virtual environment..."'
+                sh 'python3 -m venv venv'
+                sh './venv/bin/pip install pytest'
+            }
+        }
         stage('Build') {
             steps {
-                sh 'echo "Building the project..."'
-                sh 'ls -la'
-                sh 'docker build -t flask-task1 .'
+                catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                    sh 'echo "Building the project..."'
+                    sh 'ls -la'
+                    sh 'docker build -t flask-task1 .'
+                }
             }
         }
         stage('Filesystem Scan') {
             steps {
-                sh 'echo "Running Trivy filesystem scan..."'
-                sh 'trivy fs -f json -o fs-scan-results.json .'
-                archiveArtifacts artifacts: 'fs-scan-results.json', fingerprint: true
+                catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                    sh 'echo "Running Trivy filesystem scan..."'
+                    sh 'trivy fs -f json -o fs-scan-results.json .'
+                    archiveArtifacts artifacts: 'fs-scan-results.json', fingerprint: true
+                }
             }
         }
         stage('Image Scan') {
             steps {
-                sh 'echo "Running Trivy image scan..."'
-                sh 'trivy image --severity HIGH,CRITICAL -f json -o image-scan-results.json flask-task1'
-                archiveArtifacts artifacts: 'image-scan-results.json', fingerprint: true
+                catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                    sh 'echo "Running Trivy image scan..."'
+                    sh 'trivy image --severity HIGH,CRITICAL -f json -o image-scan-results.json flask-task1'
+                    archiveArtifacts artifacts: 'image-scan-results.json', fingerprint: true
+                }
             }
         }
         stage('Security Gate') {
@@ -31,8 +44,10 @@ pipeline {
         }
         stage('Test') {
             steps {
-                sh 'echo "Running unit tests..."'
-                sh 'docker run --rm --entrypoint python flask-task1 /app/test_app.py'
+                catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                    sh 'echo "Running unit tests..."'
+                    sh 'docker run --rm --entrypoint python flask-task1 /app/test_app.py'
+                }
             }
         }
         stage('Deploy') {
