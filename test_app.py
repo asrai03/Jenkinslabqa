@@ -15,10 +15,5 @@ class TestApp(unittest.TestCase):
         response = self.client.get('/')
         self.assertIn(b'Hello', response.data)
 
-    def test_deliberate_failure(self):
-        """This test deliberately fails to demonstrate UNSTABLE marking"""
-        response = self.client.get('/')
-        self.assertIn(b'THIS WILL NOT BE FOUND', response.data)
-
 if __name__ == '__main__':
     unittest.main()
